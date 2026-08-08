@@ -1,0 +1,30 @@
+{
+  "matriz_de_custo": {
+    "custo_falso_negativo": "Amount da transacao (perda total da fraude)",
+    "custo_falso_positivo": 10.0,
+    "custo_verdadeiro_positivo": 10.0,
+    "custo_verdadeiro_negativo": 0,
+    "referencia_metodologica": "Bahnsen et al. (2014) - example-dependent cost-sensitive"
+  },
+  "threshold_otimo": 0.18,
+  "threshold_padrao_referencia": 0.5,
+  "custos_por_cenario": {
+    "sem_modelo_algum": 7478.08,
+    "threshold_padrao_050": 3117.58,
+    "threshold_otimo": 2988.2
+  },
+  "resultado_threshold_otimo": {
+    "fraudes_detectadas_tp": 59,
+    "fraudes_nao_detectadas_fn": 12,
+    "bloqueios_indevidos_fp": 25,
+    "aprovacoes_corretas_tn": 15792,
+    "recall_threshold_otimo": 0.831,
+    "valor_total_fraude": 7478.08,
+    "valor_recuperado": 5329.88,
+    "valor_perdido": 2148.2,
+    "pct_recuperado": 71.27,
+    "custo_revisao_tp": 590.0,
+    "custo_atrito_fp": 250.0
+  },
+  "ressalva": "Valores de custo administrativo (EUR 10) arbitrados com base em estimativas de mercado ilustrativas, dado que o dataset nao especifica moeda oficialmente nem fornece custos reais de operacao. Resultado demonstra a metodologia correta de otimizacao de threshold por custo de negocio, nao deve ser interpretado como validacao financeira real."
+}

@@ -1,0 +1,18 @@
+{
+  "modelo_escolhido": "Isolation Forest",
+  "corte_pct_retido": 28,
+  "n_estimators": 200,
+  "contamination_fit": 0.01,
+  "recall_treino": 0.9424,
+  "recall_teste": 0.9595,
+  "fraudes_treino_total": 399,
+  "fraudes_treino_preservadas": 376,
+  "fraudes_teste_total": 74,
+  "fraudes_teste_preservadas": 71,
+  "pr_auc_teste": {
+    "isolation_forest": 0.0341,
+    "lof": 0.003,
+    "one_class_svm": 0.1503
+  },
+  "anomaly_score_threshold_producao": 0.42388789617392847
+}
