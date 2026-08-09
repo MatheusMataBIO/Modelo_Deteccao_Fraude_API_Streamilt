@@ -36,13 +36,13 @@ menos de 0,2% das transações.
 
 Esse desbalanceamento extremo cria uma armadilha estatística. Um modelo treinado
 nesse cenário aprende rapidamente que **aprovar todas as transações** já garante
-99,8% de acurácia — sem detectar uma única fraude. Métricas convencionais (Accuracy,
+99,8% de acurácia sem detectar uma única fraude. Métricas convencionais (Accuracy,
 ROC-AUC) mascaram esse comportamento, fazendo um sistema inútil parecer excelente no
 papel.
 
 Outro erro comum em projetos desse tipo é usar **split aleatório** entre treino e
 teste. Isso permite que o modelo "veja o futuro" durante o treinamento, inflando
-artificialmente a performance reportada — em produção, onde o modelo só tem acesso
+artificialmente a performance reportada, em produção, onde o modelo só tem acesso
 ao passado, esse ganho desaparece.
 
 Este projeto foi desenhado para evitar essas duas armadilhas desde a primeira
@@ -52,8 +52,8 @@ decisão de arquitetura.
 
 ## Por que uma arquitetura two-stage
 
-A abordagem mais comum em tutoriais — treinar um único classificador supervisionado
-sobre os dados desbalanceados — tem uma limitação estrutural: exemplos de fraude
+A abordagem mais comum em tutoriais é treinar um único classificador supervisionado
+sobre os dados desbalanceados mas isso tem uma limitação estrutural: exemplos de fraude
 rotulados são escassos (492 casos em 284 mil transações) e enviesados, já que só
 capturam padrões de fraude **já identificados no passado**. Fraudadores mudam de
 tática; um modelo treinado só nesses casos conhecidos tende a generalizar mal para
@@ -88,7 +88,7 @@ caro computacionalmente, mas com informação supervisionada).
 - 284.807 transações realizadas por portadores de cartão europeus, em setembro de 2013
 - 492 fraudes (0,172% do total)
 - Features `V1`–`V28`: componentes principais (PCA) de variáveis originais
-  confidenciais — sem interpretação direta de negócio
+  confidenciais e sem interpretação direta de negócio
 - `Time`: segundos desde a primeira transação do dataset
 - `Amount`: valor da transação (moeda não especificada oficialmente pela fonte)
 - `Class`: variável-alvo (0 = legítima, 1 = fraude)
@@ -158,7 +158,7 @@ Transação nova
 Accuracy e ROC-AUC são mantidas no projeto exclusivamente para fins didáticos. Uma
 demonstração feita com os dados reais deste projeto (notebook 6) mostra que a
 diferença de Accuracy entre "aprovar todas as transações sem nenhum modelo" e o
-pipeline completo é de apenas 0,06 pontos percentuais — apesar de um cenário não
+pipeline completo é de apenas 0,06 pontos percentuais apesar de um cenário não
 detectar nenhuma fraude e o outro detectar quase 80% delas. Essa é a prova prática de
 por que essas métricas nunca guiaram nenhuma decisão de arquitetura ou threshold
 neste projeto.
@@ -185,8 +185,8 @@ neste projeto.
 - **Correção de rastreabilidade de dados**: durante o desenvolvimento, foi
   identificado que o salvamento de arquivos intermediários em Parquet
   (`index=False`) quebrava o vínculo entre transações processadas e o dataset
-  original, comprometendo o cálculo de custo de negócio. A correção — introdução de
-  um identificador explícito (`transaction_id`) propagado por todo o pipeline — está
+  original, comprometendo o cálculo de custo de negócio. A correção foi a introdução de
+  um identificador explícito (`transaction_id`) propagado por todo o pipeline e está
   documentada no notebook 1 e nos ajustes subsequentes, como registro de rigor e
   transparência metodológica.
 
@@ -247,7 +247,7 @@ bloqueios indevidos em mais de 15 mil transações analisadas pelo Stage 2.
 ## Explicabilidade (SHAP)
 
 A análise SHAP sobre o modelo final revelou que **V4** e **V8** concentram a maior
-importância nas decisões do Stage 2 — um resultado que diverge do ranking de
+importância nas decisões do Stage 2, um resultado que diverge do ranking de
 separabilidade univariada obtido na EDA (liderado por V17, V14, V12), evidenciando
 que o LightGBM captura interações não-lineares entre variáveis que uma análise
 univariada simples não seria capaz de detectar. V12 se manteve relevante em ambas as
@@ -269,7 +269,7 @@ janelas temporais sucessivas e comparando suas distribuições:
 - **CSI** (Characteristic Stability Index): estabilidade das features de entrada
   mais relevantes ao modelo.
 - **PSI** (Population Stability Index): estabilidade da distribuição do score de
-  saída do modelo — também chamado de "drift de score".
+  saída do modelo também chamado de "drift de score".
 
 Todos os valores observados permaneceram muito abaixo dos limiares usuais de alerta
 (CSI e PSI < 0,03, frente a um limiar de atenção de 0,10), resultado esperado dado o
@@ -367,7 +367,7 @@ docker run -p 7860:7860 fraud-api
 ## Limitações conhecidas
 
 - A separabilidade das features neste dataset é atipicamente alta para um problema
-  real de detecção de fraude — os resultados de performance não devem ser
+  real de detecção de fraude e os resultados de performance não devem ser
   extrapolados diretamente para expectativas de produção real.
 - Os valores de custo de negócio são estimativas ilustrativas, não validadas
   financeiramente com dados reais de operação.
