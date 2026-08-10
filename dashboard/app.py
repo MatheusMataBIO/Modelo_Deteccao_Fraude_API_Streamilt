@@ -148,7 +148,7 @@ with aba_negocio:
             xaxis_title="Threshold", yaxis_title="Custo total (€)",
             height=400, margin=dict(t=20, b=20),
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         st.caption(
             "Custo de Falso Negativo = valor (Amount) da transação fraudulenta. "
@@ -205,8 +205,8 @@ with aba_simulacao:
                 )
 
         col_btn1, col_btn2 = st.columns(2)
-        submitted_predict = col_btn1.form_submit_button("🔮 Prever", use_container_width=True)
-        submitted_explain = col_btn2.form_submit_button("🧠 Prever + Explicar (SHAP)", use_container_width=True)
+        submitted_predict = col_btn1.form_submit_button("🔮 Prever", width="stretch")
+        submitted_explain = col_btn2.form_submit_button("🧠 Prever + Explicar (SHAP)", width="stretch")
 
     if submitted_predict or submitted_explain:
         payload = {"Time": time_val, "Amount": amount_val, **valores_v}
@@ -243,7 +243,7 @@ with aba_simulacao:
                         xaxis_title="Contribuição para o score de fraude",
                         yaxis=dict(autorange="reversed"),
                     )
-                    st.plotly_chart(fig_shap, use_container_width=True)
+                    st.plotly_chart(fig_shap, width="stretch")
 
             except requests.exceptions.RequestException as exc:
                 st.error(f"Erro ao consultar a API: {exc}")
@@ -272,7 +272,7 @@ with aba_monitoramento:
         dados_csi_psi.style.background_gradient(
             cmap="RdYlGn_r", subset=["Janela 1", "Janela 2", "Janela 3"], vmin=0, vmax=0.10
         ).format({"Janela 1": "{:.4f}", "Janela 2": "{:.4f}", "Janela 3": "{:.4f}"}),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
