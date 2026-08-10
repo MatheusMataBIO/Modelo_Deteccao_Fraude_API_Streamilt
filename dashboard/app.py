@@ -4,7 +4,7 @@ Dashboard — Detecção de Fraude em Cartão de Crédito (Pipeline Two-Stage)
 Três abas:
   1. Visão de Negócio     -> threshold dinâmico aplicado ao conjunto de teste
   2. Simulação Individual -> formulário que chama a API (/predict, /explain)
-  3. Monitoramento        -> resultado estático de CSI/PSI (notebook 07)
+  3. Monitoramento        -> resultado estático de CSI/PSI 
 """
 
 import json
@@ -34,7 +34,7 @@ DATA_PATH = Path(__file__).parent / "data" / "test_scores_with_amount.parquet"
 
 @st.cache_data
 def carregar_dados_teste():
-    """Carrega os scores do conjunto de teste (produto do notebook 05)."""
+    """Carrega os scores do conjunto de teste."""
     return pd.read_parquet(DATA_PATH)
 
 
@@ -95,7 +95,7 @@ with aba_negocio:
     st.write(
         "Ajuste o threshold abaixo e veja, em tempo real, como o recall, o custo "
         "total e o valor de fraude recuperado mudam. O valor **0,18** é o "
-        "threshold ótimo, calculado por minimização de custo total (notebook 05)."
+        "threshold ótimo, calculado por minimização de custo total."
     )
 
     try:
@@ -154,7 +154,7 @@ with aba_negocio:
             "Custo de Falso Negativo = valor (Amount) da transação fraudulenta. "
             "Custo de Falso Positivo e Verdadeiro Positivo = €10 (custo administrativo "
             "de revisão), conforme matriz *example-dependent cost-sensitive* "
-            "(Bahnsen et al., 2014). Valores ilustrativos — ver limitações no README."
+            "(Bahnsen et al., 2014)."
         )
 
     except FileNotFoundError:
@@ -254,7 +254,7 @@ with aba_simulacao:
 with aba_monitoramento:
     st.subheader("Estabilidade de Features e Score do Modelo (CSI / PSI)")
     st.write(
-        "Resultado do monitoramento de drift simulado no notebook 07, usando "
+        "Resultado do monitoramento de drift usando "
         "janelas temporais do conjunto de teste. Valores abaixo de 0,10 indicam "
         "estabilidade; entre 0,10–0,25, alerta moderado; acima de 0,25, drift "
         "significativo."
@@ -279,10 +279,10 @@ with aba_monitoramento:
     st.success(
         "✅ Nenhuma feature ou o score do modelo ultrapassou o limiar de alerta "
         "(0,10) nas janelas analisadas — resultado esperado dado o curto período "
-        "coberto pelo dataset (~48h). Ver limitações metodológicas no README."
+        "coberto pelo dataset (~48h)."
     )
 
     st.caption(
-        "Este é um snapshot estático do notebook 07 — em um cenário de produção "
+        "Este é um snapshot estático em um cenário de produção "
         "real, esse cálculo rodaria continuamente sobre dados novos."
     )
