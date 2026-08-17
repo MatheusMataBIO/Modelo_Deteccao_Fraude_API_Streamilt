@@ -6,6 +6,15 @@ custo de negócio, explicabilidade via SHAP, monitoramento de drift e deploy via
 
 **Repositório:** [Modelo_Deteccao_Fraude_API_Streamlit](https://github.com/MatheusMataBIO/Modelo_Deteccao_Fraude_API_Streamilt)
 
+**Demo ao vivo:**
+- 🖥️ **Dashboard:** [modelodeteccaofraudeapistreamilt-uxkunfsvdutnquheulouwr.streamlit.app](https://modelodeteccaofraudeapistreamilt-uxkunfsvdutnquheulouwr.streamlit.app/)
+- ⚙️ **API:** [modelo-deteccao-fraude-api-streamilt.onrender.com/docs](https://modelo-deteccao-fraude-api-streamilt.onrender.com/docs)
+
+> A API roda no plano gratuito do Render, se estiver inativa há um tempo, a
+> primeira chamada pode levar até ~1 minuto para responder (o serviço "acorda").
+> Isso afeta tanto o acesso direto à API quanto a aba de simulação individual
+> do dashboard.
+
 ---
 
 ## Índice
@@ -36,13 +45,13 @@ menos de 0,2% das transações.
 
 Esse desbalanceamento extremo cria uma armadilha estatística. Um modelo treinado
 nesse cenário aprende rapidamente que **aprovar todas as transações** já garante
-99,8% de acurácia sem detectar uma única fraude. Métricas convencionais (Accuracy,
+99,8% de acurácia — sem detectar uma única fraude. Métricas convencionais (Accuracy,
 ROC-AUC) mascaram esse comportamento, fazendo um sistema inútil parecer excelente no
 papel.
 
 Outro erro comum em projetos desse tipo é usar **split aleatório** entre treino e
 teste. Isso permite que o modelo "veja o futuro" durante o treinamento, inflando
-artificialmente a performance reportada, em produção, onde o modelo só tem acesso
+artificialmente a performance reportada em produção, onde o modelo só tem acesso
 ao passado, esse ganho desaparece.
 
 Este projeto foi desenhado para evitar essas duas armadilhas desde a primeira
@@ -88,7 +97,7 @@ caro computacionalmente, mas com informação supervisionada).
 - 284.807 transações realizadas por portadores de cartão europeus, em setembro de 2013
 - 492 fraudes (0,172% do total)
 - Features `V1`–`V28`: componentes principais (PCA) de variáveis originais
-  confidenciais e sem interpretação direta de negócio
+  confidenciais — sem interpretação direta de negócio
 - `Time`: segundos desde a primeira transação do dataset
 - `Amount`: valor da transação (moeda não especificada oficialmente pela fonte)
 - `Class`: variável-alvo (0 = legítima, 1 = fraude)
@@ -158,7 +167,7 @@ Transação nova
 Accuracy e ROC-AUC são mantidas no projeto exclusivamente para fins didáticos. Uma
 demonstração feita com os dados reais deste projeto (notebook 6) mostra que a
 diferença de Accuracy entre "aprovar todas as transações sem nenhum modelo" e o
-pipeline completo é de apenas 0,06 pontos percentuais apesar de um cenário não
+pipeline completo é de apenas 0,06 pontos percentuais — apesar de um cenário não
 detectar nenhuma fraude e o outro detectar quase 80% delas. Essa é a prova prática de
 por que essas métricas nunca guiaram nenhuma decisão de arquitetura ou threshold
 neste projeto.
@@ -186,7 +195,7 @@ neste projeto.
   identificado que o salvamento de arquivos intermediários em Parquet
   (`index=False`) quebrava o vínculo entre transações processadas e o dataset
   original, comprometendo o cálculo de custo de negócio. A correção foi a introdução de
-  um identificador explícito (`transaction_id`) propagado por todo o pipeline e está
+  um identificador explícito (`transaction_id`) propagado por todo o pipeline, está
   documentada no notebook 1 e nos ajustes subsequentes, como registro de rigor e
   transparência metodológica.
 
@@ -237,7 +246,7 @@ fraude presente no conjunto de teste (€ 5.329,88 de € 7.478,08), com apenas 
 bloqueios indevidos em mais de 15 mil transações analisadas pelo Stage 2.
 
 > Os valores de custo administrativo usados na matriz de custo são estimativas
-> ilustrativas de mercado — o dataset não especifica moeda oficialmente nem fornece
+> ilustrativas de mercado porque o dataset não especifica moeda oficialmente nem fornece
 > parâmetros reais de uma operação. Os resultados demonstram a metodologia correta
 > de otimização de threshold por custo de negócio, não uma validação financeira
 > definitiva.
@@ -247,7 +256,7 @@ bloqueios indevidos em mais de 15 mil transações analisadas pelo Stage 2.
 ## Explicabilidade (SHAP)
 
 A análise SHAP sobre o modelo final revelou que **V4** e **V8** concentram a maior
-importância nas decisões do Stage 2, um resultado que diverge do ranking de
+importância nas decisões do Stage 2 o que é um resultado que diverge do ranking de
 separabilidade univariada obtido na EDA (liderado por V17, V14, V12), evidenciando
 que o LightGBM captura interações não-lineares entre variáveis que uma análise
 univariada simples não seria capaz de detectar. V12 se manteve relevante em ambas as
@@ -269,14 +278,15 @@ janelas temporais sucessivas e comparando suas distribuições:
 - **CSI** (Characteristic Stability Index): estabilidade das features de entrada
   mais relevantes ao modelo.
 - **PSI** (Population Stability Index): estabilidade da distribuição do score de
-  saída do modelo também chamado de "drift de score".
+  saída do modelo — também chamado de "drift de score".
 
 Todos os valores observados permaneceram muito abaixo dos limiares usuais de alerta
 (CSI e PSI < 0,03, frente a um limiar de atenção de 0,10), resultado esperado dado o
 curto intervalo de tempo coberto pelo dataset. O cálculo foi validado com a
-biblioteca **Evidently AI**, após uma primeira implementação manual de CSI se
-mostrar estatisticamente frágil — episódio documentado no notebook correspondente
-como parte do processo real de desenvolvimento.
+biblioteca **Evidently AI**.
+> A aba de Monitoramento do dashboard exibe um **snapshot estático** desse
+> resultado e não recalcula CSI/PSI em tempo real, já que o dataset não tem um
+> fluxo contínuo de transações novas para comparar. Ver limitações abaixo.
 
 ---
 
@@ -293,15 +303,17 @@ como parte do processo real de desenvolvimento.
 │   ├── modelo_fraude_avaliação_explicabilidade.ipynb
 │   ├── modelo_fraude_monitoramento.ipynb
 │   └── modelo_fraude_preparacao_deploy.ipynb
-├── api/
-│   ├── app/
-│   │   ├── main.py            # Endpoints FastAPI (/health, /predict, /explain)
-│   │   ├── pipeline.py         # Lógica do pipeline two-stage
-│   │   └── schemas.py          # Validação de entrada/saída (Pydantic)
-│   ├── models/                 # Artefatos treinados (não versionados no Git)
-│   ├── Dockerfile
-│   └── requirements.txt
-├── dashboard/                  # Dashboard Streamlit
+├── app/
+│   ├── main.py            # Endpoints FastAPI (/health, /predict, /explain)
+│   ├── pipeline.py         # Lógica do pipeline two-stage
+│   └── schemas.py          # Validação de entrada/saída (Pydantic)
+├── models/                 # Artefatos treinados (não versionados no Git)
+├── Dockerfile
+├── requirements.txt
+├── dashboard/               # Dashboard Streamlit
+│   ├── app.py
+│   ├── requirements.txt
+│   └── data/
 └── README.md
 ```
 
@@ -331,9 +343,8 @@ API) e execução sequencial dos notebooks, na ordem listada acima.
 ### API localmente
 
 ```bash
-cd api
 pip install -r requirements.txt
-# Adicione os artefatos treinados em api/models/ antes de rodar
+# Adicione os artefatos treinados em models/ antes de rodar
 uvicorn app.main:app --reload --port 7860
 ```
 
@@ -344,9 +355,16 @@ curl http://localhost:7860/health
 ### Via Docker
 
 ```bash
-cd api
 docker build -t fraud-api .
 docker run -p 7860:7860 fraud-api
+```
+
+### Dashboard localmente
+
+```bash
+cd dashboard
+pip install -r requirements.txt
+streamlit run app.py
 ```
 
 ---
@@ -367,7 +385,7 @@ docker run -p 7860:7860 fraud-api
 ## Limitações conhecidas
 
 - A separabilidade das features neste dataset é atipicamente alta para um problema
-  real de detecção de fraude e os resultados de performance não devem ser
+  real de detecção de fraude — os resultados de performance não devem ser
   extrapolados diretamente para expectativas de produção real.
 - Os valores de custo de negócio são estimativas ilustrativas, não validadas
   financeiramente com dados reais de operação.
@@ -378,6 +396,11 @@ docker run -p 7860:7860 fraud-api
 - O período coberto pelo dataset (~48 horas) é curto demais para uma análise de
   drift genuína — o notebook de monitoramento demonstra a metodologia correta, não
   evidência definitiva de estabilidade em produção real.
+- A aba de Monitoramento do dashboard exibe um snapshot estático do resultado de
+  CSI/PSI, não um recálculo dinâmico — não há fluxo de transações novas no dataset
+  para alimentar um monitoramento contínuo real.
+- A API roda em plano gratuito (Render), com "sleep" após períodos de inatividade —
+  a primeira requisição após um tempo sem uso pode levar até ~1 minuto.
 
 ---
 
@@ -386,7 +409,7 @@ docker run -p 7860:7860 fraud-api
 **Modelagem:** Python, scikit-learn (Isolation Forest, RobustScaler), LightGBM,
 XGBoost, Optuna, SHAP
 
-**Dados e visualização:** pandas, NumPy, Matplotlib, Seaborn
+**Dados e visualização:** pandas, NumPy, Matplotlib, Seaborn, Plotly
 
 **Monitoramento:** Evidently AI
 
