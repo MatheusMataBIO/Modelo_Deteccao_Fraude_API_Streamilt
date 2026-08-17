@@ -10,7 +10,7 @@ custo de negócio, explicabilidade via SHAP, monitoramento de drift e deploy via
 - 🖥️ **Dashboard:** [modelodeteccaofraudeapistreamilt-uxkunfsvdutnquheulouwr.streamlit.app](https://modelodeteccaofraudeapistreamilt-uxkunfsvdutnquheulouwr.streamlit.app/)
 - ⚙️ **API:** [modelo-deteccao-fraude-api-streamilt.onrender.com/docs](https://modelo-deteccao-fraude-api-streamilt.onrender.com/docs)
 
-> A API roda no plano gratuito do Render, se estiver inativa há um tempo, a
+> A API roda no plano gratuito do Render e estiver inativa há um tempo, a
 > primeira chamada pode levar até ~1 minuto para responder (o serviço "acorda").
 > Isso afeta tanto o acesso direto à API quanto a aba de simulação individual
 > do dashboard.
@@ -45,7 +45,7 @@ menos de 0,2% das transações.
 
 Esse desbalanceamento extremo cria uma armadilha estatística. Um modelo treinado
 nesse cenário aprende rapidamente que **aprovar todas as transações** já garante
-99,8% de acurácia — sem detectar uma única fraude. Métricas convencionais (Accuracy,
+99,8% de acurácia sem detectar uma única fraude. Métricas convencionais (Accuracy,
 ROC-AUC) mascaram esse comportamento, fazendo um sistema inútil parecer excelente no
 papel.
 
@@ -62,7 +62,7 @@ decisão de arquitetura.
 ## Por que uma arquitetura two-stage
 
 A abordagem mais comum em tutoriais é treinar um único classificador supervisionado
-sobre os dados desbalanceados mas isso tem uma limitação estrutural: exemplos de fraude
+sobre os dados desbalanceados — tem uma limitação estrutural: exemplos de fraude
 rotulados são escassos (492 casos em 284 mil transações) e enviesados, já que só
 capturam padrões de fraude **já identificados no passado**. Fraudadores mudam de
 tática; um modelo treinado só nesses casos conhecidos tende a generalizar mal para
@@ -143,7 +143,7 @@ Transação nova
 **Decisões técnicas centrais:**
 
 - **Split temporal** (não aleatório): treino com as transações mais antigas (80%),
-  teste com as mais recentes (20%) — replica a condição real de produção, em que o
+  teste com as mais recentes (20%) replica a condição real de produção, em que o
   modelo nunca vê o futuro durante o treino.
 - **RobustScaler em `Amount`**: robusto a outliers extremos de valor (mediana/IQR em
   vez de média/desvio padrão).
@@ -194,8 +194,8 @@ neste projeto.
 - **Correção de rastreabilidade de dados**: durante o desenvolvimento, foi
   identificado que o salvamento de arquivos intermediários em Parquet
   (`index=False`) quebrava o vínculo entre transações processadas e o dataset
-  original, comprometendo o cálculo de custo de negócio. A correção foi a introdução de
-  um identificador explícito (`transaction_id`) propagado por todo o pipeline, está
+  original, comprometendo o cálculo de custo de negócio. A correção — introdução de
+  um identificador explícito (`transaction_id`) propagado por todo o pipeline — está
   documentada no notebook 1 e nos ajustes subsequentes, como registro de rigor e
   transparência metodológica.
 
@@ -230,7 +230,7 @@ neste projeto.
 | Matriz de confusão (teste) | TP=59, FP=25, FN=15, TN=56.645 |
 
 O recall final (79,73%) é a composição de perdas sequenciais entre as duas etapas
-(95,95% × 83,1%) — reportar o recall isolado de qualquer etapa superestimaria a
+(95,95% × 83,1%) e reportar o recall isolado de qualquer etapa superestimaria a
 performance real do sistema em produção.
 
 ### Impacto de negócio (threshold otimizado por custo)
@@ -246,7 +246,7 @@ fraude presente no conjunto de teste (€ 5.329,88 de € 7.478,08), com apenas 
 bloqueios indevidos em mais de 15 mil transações analisadas pelo Stage 2.
 
 > Os valores de custo administrativo usados na matriz de custo são estimativas
-> ilustrativas de mercado porque o dataset não especifica moeda oficialmente nem fornece
+> ilustrativas de mercado — o dataset não especifica moeda oficialmente nem fornece
 > parâmetros reais de uma operação. Os resultados demonstram a metodologia correta
 > de otimização de threshold por custo de negócio, não uma validação financeira
 > definitiva.
@@ -256,7 +256,7 @@ bloqueios indevidos em mais de 15 mil transações analisadas pelo Stage 2.
 ## Explicabilidade (SHAP)
 
 A análise SHAP sobre o modelo final revelou que **V4** e **V8** concentram a maior
-importância nas decisões do Stage 2 o que é um resultado que diverge do ranking de
+importância nas decisões do Stage 2 que é um resultado que diverge do ranking de
 separabilidade univariada obtido na EDA (liderado por V17, V14, V12), evidenciando
 que o LightGBM captura interações não-lineares entre variáveis que uma análise
 univariada simples não seria capaz de detectar. V12 se manteve relevante em ambas as
@@ -283,9 +283,12 @@ janelas temporais sucessivas e comparando suas distribuições:
 Todos os valores observados permaneceram muito abaixo dos limiares usuais de alerta
 (CSI e PSI < 0,03, frente a um limiar de atenção de 0,10), resultado esperado dado o
 curto intervalo de tempo coberto pelo dataset. O cálculo foi validado com a
-biblioteca **Evidently AI**.
+biblioteca **Evidently AI**, após uma primeira implementação manual de CSI se
+mostrar estatisticamente frágil — episódio documentado no notebook correspondente
+como parte do processo real de desenvolvimento.
+
 > A aba de Monitoramento do dashboard exibe um **snapshot estático** desse
-> resultado e não recalcula CSI/PSI em tempo real, já que o dataset não tem um
+> resultado — não recalcula CSI/PSI em tempo real, já que o dataset não tem um
 > fluxo contínuo de transações novas para comparar. Ver limitações abaixo.
 
 ---
@@ -294,27 +297,36 @@ biblioteca **Evidently AI**.
 
 ```
 .
-├── notebooks/
-│   ├── modelo_fraude_EDA.ipynb
-│   ├── modelo_fraude_feature_engineering.ipynb
-│   ├── modelo_fraude_detecção_anomalias_stage1.ipynb
-│   ├── modelo_fraude_classificador_stage2.ipynb
-│   ├── modelo_fraude_analise_custo-beneficio_threshold_de_decisao.ipynb
-│   ├── modelo_fraude_avaliação_explicabilidade.ipynb
-│   ├── modelo_fraude_monitoramento.ipynb
-│   └── modelo_fraude_preparacao_deploy.ipynb
+├── .gitignore
+├── Dockerfile
+├── README.md
+├── requirements.txt
 ├── app/
+│   ├── __init__.py
 │   ├── main.py            # Endpoints FastAPI (/health, /predict, /explain)
 │   ├── pipeline.py         # Lógica do pipeline two-stage
 │   └── schemas.py          # Validação de entrada/saída (Pydantic)
-├── models/                 # Artefatos treinados (não versionados no Git)
-├── Dockerfile
-├── requirements.txt
-├── dashboard/               # Dashboard Streamlit
+├── models/
+│   ├── cost_benefit_metadata.json
+│   ├── isolation_forest_stage1.pkl
+│   ├── lightgbm_stage2.pkl
+│   ├── robust_scaler_amount.pkl
+│   └── stage1_metadata.json
+├── dashboard/
 │   ├── app.py
 │   ├── requirements.txt
+│   ├── README.md
 │   └── data/
-└── README.md
+│       └── test_scores_with_amount.parquet
+└── notebooks/
+    ├── modelo_fraude_EDA.ipynb
+    ├── modelo_fraude_feature_engineering.ipynb
+    ├── modelo_fraude_detecção_anomalias_stage1.ipynb
+    ├── modelo_fraude_classificador_stage2.ipynb
+    ├── modelo_fraude_analise_custo-beneficio_threshold_de_decisao.ipynb
+    ├── modelo_fraude_avaliação_explicabilidade.ipynb
+    ├── modelo_fraude_monitoramento.ipynb
+    └── modelo_fraude_preparacao_deploy.ipynb
 ```
 
 ### Notebooks
@@ -344,7 +356,6 @@ API) e execução sequencial dos notebooks, na ordem listada acima.
 
 ```bash
 pip install -r requirements.txt
-# Adicione os artefatos treinados em models/ antes de rodar
 uvicorn app.main:app --reload --port 7860
 ```
 
