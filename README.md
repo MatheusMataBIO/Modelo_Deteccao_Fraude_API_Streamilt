@@ -283,9 +283,7 @@ janelas temporais sucessivas e comparando suas distribuições:
 Todos os valores observados permaneceram muito abaixo dos limiares usuais de alerta
 (CSI e PSI < 0,03, frente a um limiar de atenção de 0,10), resultado esperado dado o
 curto intervalo de tempo coberto pelo dataset. O cálculo foi validado com a
-biblioteca **Evidently AI**, após uma primeira implementação manual de CSI se
-mostrar estatisticamente frágil — episódio documentado no notebook correspondente
-como parte do processo real de desenvolvimento.
+biblioteca **Evidently AI**.
 
 > A aba de Monitoramento do dashboard exibe um **snapshot estático** desse
 > resultado — não recalcula CSI/PSI em tempo real, já que o dataset não tem um
